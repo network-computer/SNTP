@@ -97,6 +97,8 @@ int main() {
 	if ( n < 0 )
 	perror("ERROR writing to socket");
 
+	fprintf(stderr, "Retrieve packet back from server\n");
+
 	// Wait and receive the packet back from the server. If n == -1, it failed.
 	n = read( sockfd, ( char* ) &packet, sizeof( ntp_packet ) );
 
@@ -106,7 +108,6 @@ int main() {
 	// These two fields contain the time-stamp seconds as the packet left the NTP server.
 	// The number of seconds correspond to the seconds passed since 1900.
 	// ntohl() converts the bit/byte order from the network's to host's "endianness".
-
 	packet.txTm_s = ntohl( packet.txTm_s ); // Time-stamp seconds.
 	packet.txTm_f = ntohl( packet.txTm_f ); // Time-stamp fraction of a second.
 
@@ -114,7 +115,6 @@ int main() {
 	// Subtract 70 years worth of seconds from the seconds since 1900.
 	// This leaves the seconds since the UNIX epoch of 1970.
 	// (1900)------------------(1970)**************************************(Time Packet Left the Server)
-
 	time_t txTm = ( time_t ) ( packet.txTm_s - 2208988800U );
 
 	// Print the time we got from the server, accounting for local timezone and conversion from UTC time.
