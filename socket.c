@@ -43,8 +43,13 @@ typedef struct {
 
 
 int main() {
+	char host_name[40] = "a.st1.ntp.br"; 
 
-	fprintf(stderr, "Set the 48-byte string\n");
+	fprintf(stderr ,"Type your hostname: ");
+	scanf("%s", host_name);
+	fprintf(stderr ,"--------------------------------------------\n");
+
+	fprintf(stderr, "- Set the 48-byte string\n");
 
 	// Create and zero out the packet. All 48 bytes worth.
 	ntp_packet packet = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
@@ -54,14 +59,13 @@ int main() {
 	// Set the first byte's bits to 00,011,011 for li = 0, vn = 3, and mode = 3. The rest will be left set to zero.s
 	*( ( char * ) &packet + 0 ) = 0x1b; // Represents 27 in base 10 or 00011011 in base 2.
 
-	fprintf(stderr, "Setup our Socket and Server Data Structure\n");
+	fprintf(stderr, "- Setup our Socket and Server Data Structure\n");
 
 	// Create a UDP socket, convert the host-name to an IP address, set the port number,
 	// connect to the server, send the packet, and then read in the return packet.
 	struct sockaddr_in serv_addr; // Server address data structure.
 	struct hostent *server;      // Server data structure.
 	int sockfd;
-	char host_name[] = "a.ntp.br"; 
 	int port = 123;
 
 	sockfd = socket( AF_INET, SOCK_DGRAM, IPPROTO_UDP ); // Create a UDP socket.
@@ -69,6 +73,7 @@ int main() {
 	if ( sockfd < 0 )
 	perror("ERROR opening socket");
 
+	fprintf(stderr ,"- Convert hostname: %s to IP\n", host_name);
 	server = gethostbyname( host_name ); // Convert URL to IP.
 
 	if ( server == NULL )
@@ -85,7 +90,7 @@ int main() {
 	// Convert the port number integer to network big-endian style and save it to the server address structure.
 	serv_addr.sin_port = htons( port );
 
-	fprintf(stderr ,"Send our Message to the Server\n");
+	fprintf(stderr ,"- Send our Message to the Server\n");
 
 	// Call up the server using its IP address and port number.
 	if ( connect( sockfd, ( struct sockaddr * ) &serv_addr, sizeof( serv_addr) ) < 0 )
@@ -97,7 +102,7 @@ int main() {
 	if ( n < 0 )
 	perror("ERROR writing to socket");
 
-	fprintf(stderr, "Retrieve packet back from server\n");
+	fprintf(stderr, "- Retrieve packet back from server\n");
 
 	// Wait and receive the packet back from the server. If n == -1, it failed.
 	n = read( sockfd, ( char* ) &packet, sizeof( ntp_packet ) );
@@ -116,6 +121,8 @@ int main() {
 	// This leaves the seconds since the UNIX epoch of 1970.
 	// (1900)------------------(1970)**************************************(Time Packet Left the Server)
 	time_t txTm = ( time_t ) ( packet.txTm_s - 2208988800U );
+
+	fprintf(stderr ,"--------------------------------------------\n");
 
 	// Print the time we got from the server, accounting for local timezone and conversion from UTC time.
 	printf( "Time: %s", ctime( ( const time_t* ) &txTm ) );
