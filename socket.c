@@ -9,6 +9,7 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include <time.h>   
+#include <errno.h>
 
 typedef struct {
 
@@ -40,13 +41,10 @@ typedef struct {
 } ntp_packet;              // Total: 384 bits or 48 bytes.
 
 
-void error(const char *error) {
-    printf("%s", error);
-}
 
-int main(int argc, char ** arg) {
+int main() {
 
-	printf("Set the 48-byte string");
+	fprintf(stderr, "Set the 48-byte string\n");
 
 	// Create and zero out the packet. All 48 bytes worth.
 	ntp_packet packet = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
@@ -56,25 +54,25 @@ int main(int argc, char ** arg) {
 	// Set the first byte's bits to 00,011,011 for li = 0, vn = 3, and mode = 3. The rest will be left set to zero.s
 	*( ( char * ) &packet + 0 ) = 0x1b; // Represents 27 in base 10 or 00011011 in base 2.
 
-	printf("Setup our Socket and Server Data Structure");
+	fprintf(stderr, "Setup our Socket and Server Data Structure\n");
 
 	// Create a UDP socket, convert the host-name to an IP address, set the port number,
 	// connect to the server, send the packet, and then read in the return packet.
 	struct sockaddr_in serv_addr; // Server address data structure.
 	struct hostent *server;      // Server data structure.
 	int sockfd;
-	char host_name[] = "time-nw.nist.gov"; 
-	int port = 8080;
+	char host_name[] = "a.ntp.br"; 
+	int port = 123;
 
 	sockfd = socket( AF_INET, SOCK_DGRAM, IPPROTO_UDP ); // Create a UDP socket.
 
 	if ( sockfd < 0 )
-	error( "ERROR opening socket" );
+	perror("ERROR opening socket");
 
 	server = gethostbyname( host_name ); // Convert URL to IP.
 
 	if ( server == NULL )
-	error( "ERROR, no such host" );
+	perror("ERROR, no such host");
 
 	// Zero out the server address structure.
 	bzero( ( char* ) &serv_addr, sizeof( serv_addr ) );
@@ -87,23 +85,23 @@ int main(int argc, char ** arg) {
 	// Convert the port number integer to network big-endian style and save it to the server address structure.
 	serv_addr.sin_port = htons( port );
 
-	printf("Send our Message to the Server");
+	fprintf(stderr ,"Send our Message to the Server\n");
 
 	// Call up the server using its IP address and port number.
 	if ( connect( sockfd, ( struct sockaddr * ) &serv_addr, sizeof( serv_addr) ) < 0 )
-	error( "ERROR connecting" );
+	perror("ERROR connecting");
 
 	// Send it the NTP packet it wants. If n == -1, it failed.
 	int n = write( sockfd, ( char* ) &packet, sizeof( ntp_packet ) );
 
 	if ( n < 0 )
-	error( "ERROR writing to socket" );
+	perror("ERROR writing to socket");
 
 	// Wait and receive the packet back from the server. If n == -1, it failed.
 	n = read( sockfd, ( char* ) &packet, sizeof( ntp_packet ) );
 
 	if ( n < 0 )
-	error( "ERROR reading from socket" );
+	perror("ERROR reading from socket");
 
 	// These two fields contain the time-stamp seconds as the packet left the NTP server.
 	// The number of seconds correspond to the seconds passed since 1900.
