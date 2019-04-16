@@ -66,8 +66,12 @@ int main() {
 	struct hostent *server;      // Server data structure.
 	int sockfd;
 	int port = 123;
+    struct timeval timeout;
+    timeout.tv_usec = 0;
+    timeout.tv_sec = 20;
 
 	sockfd = socket( AF_INET, SOCK_DGRAM, IPPROTO_UDP ); // Create a UDP socket.
+    setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, (char *) &timeout, sizeof(timeout));
 
 	if ( sockfd < 0 )
 	    perror("ERROR opening socket");
