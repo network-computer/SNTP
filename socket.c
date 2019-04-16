@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <strings.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
@@ -52,12 +53,10 @@ int main() {
 	fprintf(stderr, "- Set the 48-byte string\n");
 
 	// Create and zero out the packet. All 48 bytes worth.
-	ntp_packet packet = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-
-	memset( &packet, 0, sizeof( ntp_packet ) );
+	ntp_packet packet = {0};
 
 	// Set the first byte's bits to 00,011,011 for li = 0, vn = 3, and mode = 3. The rest will be left set to zero.s
-	*( ( char * ) &packet + 0 ) = 0x1b; // Represents 27 in base 10 or 00011011 in base 2.
+    packet.li_vn_mode = (uint8_t) 0x1b; // Represents 27 in base 10 or 00011011 in base 2.
 
 	fprintf(stderr, "- Setup our Socket and Server Data Structure\n");
 
@@ -71,13 +70,13 @@ int main() {
 	sockfd = socket( AF_INET, SOCK_DGRAM, IPPROTO_UDP ); // Create a UDP socket.
 
 	if ( sockfd < 0 )
-	perror("ERROR opening socket");
+	    perror("ERROR opening socket");
 
 	fprintf(stderr ,"- Convert hostname: %s to IP\n", host_name);
-	server = gethostbyname( host_name ); // Convert URL to IP.
+	server = gethostbyname( host_name ); // Convert NAME to IP.
 
 	if ( server == NULL )
-	perror("ERROR, no such host");
+	    perror("ERROR no such host");
 
 	// Zero out the server address structure.
 	bzero( ( char* ) &serv_addr, sizeof( serv_addr ) );
@@ -94,13 +93,13 @@ int main() {
 
 	// Call up the server using its IP address and port number.
 	if ( connect( sockfd, ( struct sockaddr * ) &serv_addr, sizeof( serv_addr) ) < 0 )
-	perror("ERROR connecting");
+        perror("ERROR connecting");
 
 	// Send it the NTP packet it wants. If n == -1, it failed.
 	int n = write( sockfd, ( char* ) &packet, sizeof( ntp_packet ) );
 
 	if ( n < 0 )
-	perror("ERROR writing to socket");
+        perror("ERROR writing to socket");
 
 	fprintf(stderr, "- Retrieve packet back from server\n");
 
@@ -108,7 +107,7 @@ int main() {
 	n = read( sockfd, ( char* ) &packet, sizeof( ntp_packet ) );
 
 	if ( n < 0 )
-	perror("ERROR reading from socket");
+        perror("ERROR reading from socket");
 
 	// These two fields contain the time-stamp seconds as the packet left the NTP server.
 	// The number of seconds correspond to the seconds passed since 1900.
