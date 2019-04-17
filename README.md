@@ -13,6 +13,31 @@ gcc socket.c -o socket
 ./socket
 ```
 
+### Usage
+Ao rodar o projeto o usuário deverá informar o IP ou nome do serviço.
+#### Exemplo:
+```bash
+$ ./socket
+Type your hostname: a.ntp.br
+--------------------------------------------
+- Set the 48-byte string
+- Setup our Socket and Server Data Structure
+- Convert hostname: a.ntp.br to IP
+- Send our Message to the Server
+- Retrieve packet back from server
+--------------------------------------------
+Time: Wed Apr 17 20:11:13 2019
+```
+
+### Development Infos
+
+- Sistemas operacionais usado para desenvolvimento:
+    - Arch Linux
+    - MacOS
+
+- Versões
+    - gcc (GCC) 8.2.1 20181127
+
 
 ## A Estrutura do NTP.br
 
@@ -43,5 +68,3 @@ O servidor de monitoração consulta todos os servidores estrato 1 e estrato 2 d
 A figura a seguir representa a estrutura do NTP.br:
 
 ![](images/ntp-structure.png)
-
-
