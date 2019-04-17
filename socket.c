@@ -66,6 +66,7 @@ int main() {
 	struct hostent *server;      // Server data structure.
 	int sockfd;
 	int port = 123;
+    int to = 0;
     struct timeval timeout;
     timeout.tv_usec = 0;
     timeout.tv_sec = 20;
@@ -99,19 +100,31 @@ int main() {
 	if ( connect( sockfd, ( struct sockaddr * ) &serv_addr, sizeof( serv_addr) ) < 0 )
         perror("ERROR connecting");
 
-	// Send it the NTP packet it wants. If n == -1, it failed.
-	int n = write( sockfd, ( char* ) &packet, sizeof( ntp_packet ) );
+    while(1) {
+        // Send it the NTP packet it wants. If n == -1, it failed.
+        int n = write( sockfd, ( char* ) &packet, sizeof( ntp_packet ) );
 
-	if ( n < 0 )
-        perror("ERROR writing to socket");
+        if ( n < 0 )
+            perror("ERROR writing to socket");
 
-	fprintf(stderr, "- Retrieve packet back from server\n");
+        fprintf(stderr, "- Retrieve packet back from server\n");
 
-	// Wait and receive the packet back from the server. If n == -1, it failed.
-	n = read( sockfd, ( char* ) &packet, sizeof( ntp_packet ) );
+        // Wait and receive the packet back from the server. If n == -1, it failed.
+        n = read( sockfd, ( char* ) &packet, sizeof( ntp_packet ) );
 
-	if ( n < 0 )
-        perror("ERROR reading from socket");
+        if ( n < 0 ) {
+            perror("ERROR reading from socket");
+            if(!to) {
+                printf("Tentando novamente...\n");
+            }
+            else {
+                printf("Duas tentativas efetuadas sem sucesso\n");
+                break;
+            }
+            to = 1;
+        }
+        else to = 0;
+    }
 
 	// These two fields contain the time-stamp seconds as the packet left the NTP server.
 	// The number of seconds correspond to the seconds passed since 1900.
@@ -128,7 +141,11 @@ int main() {
 	fprintf(stderr ,"--------------------------------------------\n");
 
 	// Print the time we got from the server, accounting for local timezone and conversion from UTC time.
-	printf( "Time: %s", ctime( ( const time_t* ) &txTm ) );
+
+    if(!to)
+        printf( "Date/time: %s", ctime( ( const time_t* ) &txTm ) );
+    else
+        printf( "Date/time: não foi possível contactar servidor\n" );
 
 	return 0;
 }
