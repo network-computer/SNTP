@@ -1,19 +1,26 @@
-# SNTP
+# Fundamentos de Redes de Computadores - Trabalho 01 (SNTP)
 
-### Dependencies 
+### Professor
+- Tiago Alves
+
+### Alunos
+- Arthur Barbosa Diniz  15/0118457
+- Vitor Falcao H. Costa 15/0148623
+
+### Dependência
 GCC
 
-### Compile
+### Compilar
 ```bash
 gcc socket.c -o socket
 ```
 
-### Run
+### Rodar
 ```bash
 ./socket
 ```
 
-### Usage
+### Uso
 Ao rodar o projeto o usuário deverá informar o IP ou nome do serviço.
 #### Exemplo:
 ```bash
@@ -29,7 +36,7 @@ Type your hostname: a.ntp.br
 Time: Wed Apr 17 20:11:13 2019
 ```
 
-### Development Infos
+### Informações de Desenvolvimento
 
 - Sistemas operacionais usado para desenvolvimento:
     - Arch Linux
