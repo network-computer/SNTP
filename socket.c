@@ -100,7 +100,8 @@ int main() {
 	if ( connect( sockfd, ( struct sockaddr * ) &serv_addr, sizeof( serv_addr) ) < 0 )
         perror("ERROR connecting");
 
-    while(1) {
+	int failed = 1;
+    while(failed) {
         // Send it the NTP packet it wants. If n == -1, it failed.
         int n = write( sockfd, ( char* ) &packet, sizeof( ntp_packet ) );
 
@@ -112,18 +113,21 @@ int main() {
         // Wait and receive the packet back from the server. If n == -1, it failed.
         n = read( sockfd, ( char* ) &packet, sizeof( ntp_packet ) );
 
-        if ( n < 0 ) {
+        if ( n == -1 ) { // It failed
             perror("ERROR reading from socket");
             if(!to) {
                 printf("Tentando novamente...\n");
+				sleep(3);
             }
             else {
                 printf("Duas tentativas efetuadas sem sucesso\n");
+				sleep(3);
                 break;
             }
             to = 1;
-        }
-        else to = 0;
+        } else {
+			failed = 0;
+		}
     }
 
 	// These two fields contain the time-stamp seconds as the packet left the NTP server.
